@@ -2,33 +2,40 @@ import React, { useRef, useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import styled from 'styled-components';
 
-export const SlideButton = () => {
+export const SlideButton = ({ defaultMotionValue = 125 }) => {
   const [buttonText, setButtonText] = useState('Slide Me');
   const [doneSwiping, setDoneSwiping] = useState(false);
   const [startedSwiping, setStartedSwiping] = useState(false);
 
   const constraintsRef = useRef(null);
-  const x = useMotionValue(125);
-  const background = useTransform(x, [0, -170], ['#008800', '#00ce00']);
+  const x = useMotionValue(defaultMotionValue);
+
+  const swipeDirection = defaultMotionValue > 0 ? 'left' : 'right';
+  const transformRange = {
+    left: { coords: [0, -170], colors: ['#008800', '#00ce00'] },
+    right: { coords: [-170, 0], colors: ['#008800', '#00ce00'] },
+  };
+
+  const background = useTransform(
+    x,
+    transformRange[swipeDirection].coords,
+    transformRange[swipeDirection].colors
+  );
 
   return (
-    <SlideButtonContainer
-      style={{ background }}
-      ref={constraintsRef}
-      doneSwiping={doneSwiping}
-    >
+    <SlideButtonContainer style={{ background }} ref={constraintsRef} doneSwiping={doneSwiping}>
       <FixedContainer>
-        <FixedArrow doneSwiping={doneSwiping}>
+        <FixedText doneSwiping={doneSwiping}>{buttonText}</FixedText>
+        <FixedArrow doneSwiping={doneSwiping} swipeMotion={swipeDirection}>
           <i
-            className="fa fa-chevron-left"
+            className={`fa fa-chevron-${swipeDirection}`}
             style={{ fontSize: '48px', color: 'white' }}
           ></i>
           <i
-            className="fa fa-chevron-left"
+            className={`fa fa-chevron-${swipeDirection}`}
             style={{ fontSize: '48px', color: 'white' }}
           ></i>
         </FixedArrow>
-        <FixedText doneSwiping={doneSwiping}>{buttonText}</FixedText>
       </FixedContainer>
 
       {!doneSwiping && (
@@ -62,6 +69,7 @@ export const SlideButtonContainer = styled(motion.div)`
   border-radius: 30px;
   box-sizing: border-box;
   ${(props) => props.doneSwiping && `border: 5px solid rgba(0, 206, 0, .6)`};
+  clear: both;
 `;
 
 export const FixedContainer = styled.div`
@@ -113,8 +121,7 @@ export const Button = styled(motion.button)`
   font-size: 2em;
   color: white;
   outline: none;
-  border: ${(props) =>
-    props.startedSwiping ? '5px solid rgba(255, 255, 255, 0.5)' : 'none'};
+  border: ${(props) => (props.startedSwiping ? '5px solid rgba(255, 255, 255, 0.5)' : 'none')};
   &:hover {
     cursor: pointer;
   }
